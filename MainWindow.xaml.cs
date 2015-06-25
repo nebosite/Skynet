@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +38,7 @@ namespace SkyNet
         Transform3DGroup _coverageTransform = new Transform3DGroup();
         double _globalTimeSeconds = 0;
         double rotation;
+
 
 
         //-------------------------------------------------------------------------------------

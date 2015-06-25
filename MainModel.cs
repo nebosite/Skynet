@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -86,6 +87,11 @@ namespace SkyNet
         double beamDivergence = 50 / 180.0 * Math.PI;
 
         public ObservableCollection<SatelliteModel> VisualObjects { get; set; }
+
+        public string WindowTitle
+        {
+            get { return "SkyNet v" + Assembly.GetExecutingAssembly().GetName().Version; }
+        }
 
 
         /// <summary>

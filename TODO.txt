@@ -1,0 +1,11 @@
+﻿TODO
+	[x] Add Version
+	[ ] Create a release
+	[ ] Clean up heatmap code
+	[ ] Slider for what "white" is on the heatmap
+	[ ] Make sure the coverage circle is the correct size
+	[ ] Toggle heat map
+	[ ] Plugins: deployment, node code, reporting
+	[ ] Save state
+	[ ] Satellite density slider
+	[ ] Communicate this to someone at Spacex
