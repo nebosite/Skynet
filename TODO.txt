@@ -1,12 +1,6 @@
 ﻿TODO
 
-v 0.2.0.0
-	[x] Clean up heatmap code and other code in general
-	[x] Draw on a black background
-	[x] Slider for what "white" is on the heatmap
-	[x] Toggle heat map
-	[x] Slider and button for number of satellites
-
+v 0.3.0.0
 
 v Later
 	[ ] Scale slider
@@ -16,6 +10,13 @@ v Later
 
 
 DONE
+
+v 0.2.0.0
+	[x] Clean up heatmap code and other code in general
+	[x] Draw on a black background
+	[x] Slider for what "white" is on the heatmap
+	[x] Toggle heat map
+	[x] Slider and button for number of satellites
 
 V 0.1.0.0	
 	[x] Add Version
