@@ -56,6 +56,7 @@
     </ApplicationDefinition>
     <Compile Include="Heatmap.cs" />
     <Compile Include="ModelHelper.cs" />
+    <Compile Include="StelliteModel.cs" />
     <Compile Include="Vector3.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -101,9 +102,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Checker.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Earth.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="earthmap10k_reduced.jpg">

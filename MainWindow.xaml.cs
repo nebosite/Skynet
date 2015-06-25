@@ -39,8 +39,6 @@ namespace SkyNet
         double _globalTimeSeconds = 0;
         double rotation;
 
-
-
         //-------------------------------------------------------------------------------------
         /// <summary>
         /// Constructor
@@ -69,7 +67,6 @@ namespace SkyNet
 
             mainGroup = new Model3DGroup();
 
-
             var earthModel = ModelHelper.CreateSphereModel(1);
             var coverageModel = ModelHelper.CreateSphereModel(1.004);
 
@@ -83,15 +80,6 @@ namespace SkyNet
             coverageModel.Material = new DiffuseMaterial(heatMapBrush);
             coverageModel.Transform = _coverageTransform;
             mainGroup.Children.Add(coverageModel);
-
-
-            //var satellite = ModelHelper.CreateSatelliteModel(mainGroup);
-            //satellite.Material = new DiffuseMaterial(Brushes.Red);
-            //var itemTransform = new Transform3DGroup();
-            //    //itemTransform.Children.Add(new ScaleTransform3D(1000, 1000, 1000));
-            //    //itemTransform.Children.Add(new TranslateTransform3D(item.Location.X, item.Location.Y, item.Location.Z));
-            //satellite.Transform = itemTransform;
-            //mainGroup.Children.Add(satellite);
 
             EarthScene.Content = mainGroup;
 
@@ -135,24 +123,17 @@ namespace SkyNet
 
             _coverageTransform.Children.Clear();
             _coverageTransform.Children.Add(new ScaleTransform3D(r, r, r));
-            //_coverageTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), _mainModel.GlobalTimeSeconds / SECONDSPERDAY * 360)));
 
             _worldTransform.Children.Clear();
             _worldTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), _rotationZ)));
             _worldTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), _rotationX)));
             rotation += .003;
             RenderingEventArgs renderArgs = (RenderingEventArgs)e;
-            foreach(var item in _mainModel.VisualObjects)
+            foreach(var item in _mainModel.Satellites)
             {
-
-                var radius = item.Location.Length;
-                if (radius == 0) continue;
-
-                //item.Location = new Vector3(0, Math.Sin(rotation) * radius, -Math.Cos(rotation) * radius);
-                //item.Location = new Vector3(0, Math.Sin(rotation) * radius,  Math.Cos(rotation) * -radius);
                 var location = item.Location;
-                //location = new Vector3(0, .2, -1);
 
+                // Back out the correct mapping of this satellite onto the heatmap
                 var h = Math.Sqrt(location.X * location.X + location.Z * location.Z);
                 var sinTheta = -location.Z / h;
                 var theta = -Math.Asin(sinTheta);
@@ -165,27 +146,10 @@ namespace SkyNet
 
                 var heatx = (theta - Math.PI) / (Math.PI*2) * _heatmapWidth;
                 var heaty =  (Math.PI / 2 - phi) / Math.PI * _heatmapHeight;
-                //_heatMap.DrawTest((int)heatx, (int)heaty);
-                // Calculated radius is 3300 km to horizon. 
 
+                _heatMap.DrawSpot(heatx, heaty, 20, .05);
 
-                //Stopwatch sw = new Stopwatch();
-                //sw.Start();
-                //for (int i = 0; i < 100; i++)
-                //{
-                //    _heatMap.DrawSpot2(heatx, heaty, 20, .05);
-                //}
-                //sw.Stop();
-                //Debug.WriteLine("Fast: " + sw.Elapsed.TotalSeconds * 1000000);
-                //sw.Restart();
-                //for (int i = 0; i < 100; i++)
-                //{
-                    _heatMap.DrawSpot3(heatx, heaty, 20, .05);
-                //}
-                //sw.Stop();
-                //Debug.WriteLine("Fast: " + sw.Elapsed.TotalSeconds * 1000000);
-                //Debug.WriteLine(heatx + "," + heaty);
-
+                // Make sure the satellite has a 3D model and render it
                 if(item.Model == null)
                 {
                     item.Model = ModelHelper.CreateSatelliteModel(mainGroup);
@@ -195,27 +159,9 @@ namespace SkyNet
                 var itemTransform = new Transform3DGroup();
                 itemTransform.Children.Add(new ScaleTransform3D(1000, 1000, 1000));
                 itemTransform.Children.Add(new TranslateTransform3D(item.Location.X/1000, item.Location.Y/1000, item.Location.Z/1000));
-                item.Model.Transform = itemTransform;
-                
-
-                //if(item.VisualElement == null)
-                //{
-                //    var ellipse = new Ellipse();
-                //    ellipse.Width = item.VisualSize;
-                //    ellipse.Height = item.VisualSize;
-                //    ellipse.Fill = item.FillColor;
-                //    item.VisualElement = ellipse;
-                //    PlanetDisplay.Children.Add(ellipse);
-                //}
-
-                //var shape = item.VisualElement as Ellipse;
-                //shape.Width = item.VisualSize;
-                //shape.Height = item.VisualSize;
-                //Canvas.SetLeft(shape, item.X);
-                //Canvas.SetTop(shape, item.Y);
-                //if (item.Location.Z > 3000000) shape.Visibility = Visibility.Hidden;
-                //else shape.Visibility = Visibility.Visible;
+                item.Model.Transform = itemTransform;                
             }
+
             _heatMap.Render();
 
         }
@@ -311,7 +257,6 @@ namespace SkyNet
                 _rotationX -= deltaY/10.0;
                 _lastSpot = spot;
             }
-
         }
 
         //-------------------------------------------------------------------------------------
@@ -322,10 +267,6 @@ namespace SkyNet
         {
             _dragging = false;
             Planet3DDisaply.ReleaseMouseCapture();
-
         }
-
-        
-
     }
 }
