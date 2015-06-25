@@ -129,25 +129,30 @@ namespace SkyNet
             _worldTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), _rotationX)));
             rotation += .003;
             RenderingEventArgs renderArgs = (RenderingEventArgs)e;
+
+            var coveragePerSatellite = .85 / _mainModel.PrimeCoverage;
             foreach(var item in _mainModel.Satellites)
             {
                 var location = item.Location;
 
-                // Back out the correct mapping of this satellite onto the heatmap
-                var h = Math.Sqrt(location.X * location.X + location.Z * location.Z);
-                var sinTheta = -location.Z / h;
-                var theta = -Math.Asin(sinTheta);
-                if (h == 0) theta = Math.PI / 2;
-                if (location.X > 0) theta = Math.PI / 2 + (Math.PI / 2 - theta);
-                var h2 = location.Length;
-                var sinPhi = location.Y / h2;
-                var phi = Math.Asin(sinPhi);
-                if (h2 == 0) phi = Math.PI / 2;
+                if (_mainModel.HeatmapEnabled)
+                {
+                    // Back out the correct mapping of this satellite onto the heatmap
+                    var h = Math.Sqrt(location.X * location.X + location.Z * location.Z);
+                    var sinTheta = -location.Z / h;
+                    var theta = -Math.Asin(sinTheta);
+                    if (h == 0) theta = Math.PI / 2;
+                    if (location.X > 0) theta = Math.PI / 2 + (Math.PI / 2 - theta);
+                    var h2 = location.Length;
+                    var sinPhi = location.Y / h2;
+                    var phi = Math.Asin(sinPhi);
+                    if (h2 == 0) phi = Math.PI / 2;
 
-                var heatx = (theta - Math.PI) / (Math.PI*2) * _heatmapWidth;
-                var heaty =  (Math.PI / 2 - phi) / Math.PI * _heatmapHeight;
+                    var heatx = (theta - Math.PI) / (Math.PI * 2) * _heatmapWidth;
+                    var heaty = (Math.PI / 2 - phi) / Math.PI * _heatmapHeight;
 
-                _heatMap.DrawSpot(heatx, heaty, 20, .05);
+                    _heatMap.DrawSpot(heatx, heaty, 20, coveragePerSatellite);
+                }
 
                 // Make sure the satellite has a 3D model and render it
                 if(item.Model == null)
@@ -186,49 +191,6 @@ namespace SkyNet
 
         bool _dragging = false;
         Point _lastSpot;
-        //-------------------------------------------------------------------------------------
-        /// <summary>
-        /// </summary>
-        //-------------------------------------------------------------------------------------
-        private void PlanetDisplay_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            PlanetDisplay.CaptureMouse();
-            _dragging = true;
-            _lastSpot = Mouse.GetPosition(sender as IInputElement);
-        }
-
-        //-------------------------------------------------------------------------------------
-        /// <summary>
-        /// </summary>
-        //-------------------------------------------------------------------------------------
-        private void PlanetDisplay_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (_dragging)
-            {
-                var spot = Mouse.GetPosition(sender as IInputElement);
-                var deltaX = spot.X - _lastSpot.X;
-                var deltaY = spot.Y - _lastSpot.Y;
-                _mainModel.CenterX += deltaX;
-                _mainModel.CenterY += deltaY;
-                _lastSpot = spot;
-            }
-        }
-
-        //-------------------------------------------------------------------------------------
-        /// <summary>
-        /// </summary>
-        //-------------------------------------------------------------------------------------
-        private void PlanetDisplay_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            _dragging = false;
-            PlanetDisplay.ReleaseMouseCapture();
-        }
-
-        private void Planet3DDisplay_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-
-        }
-
         double _rotationX = 0;
         double _rotationZ = 0;
         //-------------------------------------------------------------------------------------
@@ -267,6 +229,35 @@ namespace SkyNet
         {
             _dragging = false;
             Planet3DDisaply.ReleaseMouseCapture();
+        }
+
+        //-------------------------------------------------------------------------------------
+        /// <summary>
+        /// </summary>
+        //-------------------------------------------------------------------------------------
+        private void Planet3DDisplay_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+
+        }
+
+        //-------------------------------------------------------------------------------------
+        /// <summary>
+        /// </summary>
+        //-------------------------------------------------------------------------------------
+        private void Regenerate_Click(object sender, RoutedEventArgs e)
+        {
+            CompositionTarget.Rendering -= DrawFrame;
+
+            _running = false;
+            Thread.Sleep(100);
+            _mainModel.RegenerateSatellites();
+            SetupWorld();
+
+            _running = true;
+            CompositionTarget.Rendering += DrawFrame;
+            moverThread = new Thread(Mover);
+            moverThread.Start();
+
         }
     }
 }

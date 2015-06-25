@@ -2,14 +2,15 @@
 
 v 0.2.0.0
 	[x] Clean up heatmap code and other code in general
-	[ ] Draw on a black background
-	[ ] Scale slider
-	[ ] Slider for what "white" is on the heatmap
-	[ ] Toggle heat map
-	[ ] Slider and button for number of satellites
+	[x] Draw on a black background
+	[x] Slider for what "white" is on the heatmap
+	[x] Toggle heat map
+	[x] Slider and button for number of satellites
+
 
 v Later
-	[ ] Save state
+	[ ] Scale slider
+	[ ] Mousewheel scaling	[ ] Save state
 	[ ] Make sure the coverage circle is the correct size
 	[ ] Plugins: deployment, node code, reporting
 

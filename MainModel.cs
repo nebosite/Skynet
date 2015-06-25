@@ -110,6 +110,50 @@ namespace SkyNet
         }
 
 
+        /// <summary>
+        /// Obervable property: PrimeCoverage
+        /// </summary>
+        private int _primeCoverage;
+        public int PrimeCoverage
+        {
+            get { return _primeCoverage; }
+            set
+            {
+                _primeCoverage = value;
+                RaisePropertyChanged("PrimeCoverage");
+            }
+        }
+        
+        /// <summary>
+        /// Obervable property: HeatmapEnabled
+        /// </summary>
+        private bool _heatmapEnabled;
+        public bool HeatmapEnabled
+        {
+            get { return _heatmapEnabled; }
+            set
+            {
+                _heatmapEnabled = value;
+                RaisePropertyChanged("HeatmapEnabled");
+            }
+        }
+
+
+        /// <summary>
+        /// Obervable property: SatelliteCount
+        /// </summary>
+        private int _satelliteCount;
+        public int SatelliteCount
+        {
+            get { return _satelliteCount; }
+            set
+            {
+                _satelliteCount = value;
+                RaisePropertyChanged("SatelliteCount");
+            }
+        }
+        
+        
         //-------------------------------------------------------------------------------------
         /// <summary>
         /// Constructor
@@ -118,6 +162,8 @@ namespace SkyNet
         public MainModel()
         {
             Satellites = new ObservableCollection<SatelliteModel>();
+            HeatmapEnabled = false;
+            PrimeCoverage = 20;
 
             Scale = .00001;
             CenterX = 350;
@@ -128,9 +174,20 @@ namespace SkyNet
 
             _mainOrbit = CalculateOrbitSolutions();
 
-            int satelliteCount = 700;
-            int skip = _mainOrbit.Count / satelliteCount;
-            for(int i = 0; i < satelliteCount; i++)
+            SatelliteCount = 700;
+            RegenerateSatellites();
+        }
+
+        //-------------------------------------------------------------------------------------
+        /// <summary>
+        /// RegenerateSatellites
+        /// </summary>
+        //-------------------------------------------------------------------------------------
+        public void RegenerateSatellites()
+        {
+            Satellites.Clear();
+            int skip = _mainOrbit.Count / SatelliteCount;
+            for (int i = 0; i < SatelliteCount; i++)
             {
                 var newSatellite = _mainOrbit[i * skip];
                 newSatellite.Size = 5;
