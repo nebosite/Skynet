@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="SkyNet.MainWindow"
         Title="{Binding WindowTitle}" Height="795.5" Width="1337.985"
-        Closing="Window_Closing">
+        Closing="Window_Closing" Icon="skyneticon.ico">
     <Grid>
         <TabControl Margin="10,10,0,10" HorizontalAlignment="Left" Width="386">
             <TabItem Header="View">
@@ -13,6 +13,17 @@
                         <Slider Value="{Binding TimeDilation}" Minimum="1" Maximum="1000" Width="200" />
                         <Label Content="{Binding TimeDilation}"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Zoom:  "/>
+                        <Slider Value="{Binding FieldOfView}" Minimum="1" Maximum="10" Width="200" />
+                        <Label Content="{Binding FieldOfView}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Satellite Count:  "/>
+                        <Slider Value="{Binding SatelliteCount}" Minimum="1" Maximum="1000" Width="180" />
+                        <Label Content="{Binding SatelliteCount}" Width="35"/>
+                        <Button Content="Regenerate" Click="Regenerate_Click" />
+                    </StackPanel>                    
                     <Border BorderThickness="2" BorderBrush="Blue">
                         <StackPanel>
                             <Label Content="Satellite Coverage Heat Map" FontWeight="Bold"/>
@@ -25,12 +36,7 @@
                             </StackPanel>                              
                         </StackPanel>
                     </Border>
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Satellite Count:  "/>
-                        <Slider Value="{Binding SatelliteCount}" Minimum="1" Maximum="1000" Width="180" />
-                        <Label Content="{Binding SatelliteCount}" Width="35"/>
-                        <Button Content="Regenerate" Click="Regenerate_Click" />
-                    </StackPanel>
+
 
                 </StackPanel>
             </TabItem>
@@ -45,7 +51,7 @@
             >            
 
             <Viewport3D.Camera>
-                <PerspectiveCamera x:Name="earthCamera" Position="0,0000,-200000" FieldOfView="5" LookDirection="0,0,1" />
+                <PerspectiveCamera x:Name="earthCamera" Position="0,0000,-200000" FieldOfView="{Binding FieldOfView}" LookDirection="0,0,1" />
             </Viewport3D.Camera>
             <ModelVisual3D>
                 <ModelVisual3D.Content>

@@ -51,6 +51,20 @@ namespace SkyNet
 
 
         /// <summary>
+        /// Obervable property: FieldOfView
+        /// </summary>
+        private double _fieldOfView;
+        public double FieldOfView
+        {
+            get { return _fieldOfView; }
+            set
+            {
+                _fieldOfView = ((int)(value * 100))/100.0;
+                RaisePropertyChanged("FieldOfView");
+            }
+        }
+        
+        /// <summary>
         /// Obervable property: Scale
         /// </summary>
         private double _scale;
@@ -169,6 +183,7 @@ namespace SkyNet
             CenterX = 350;
             CenterY = 150;
             TimeDilation = 10;
+            FieldOfView = 10;
 
             var earthBrush = new ImageBrush(new BitmapImage(new Uri(@"earth.png", UriKind.Relative)));
 

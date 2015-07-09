@@ -7,16 +7,40 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkyNet", "SkyNet.csproj", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8735B2BE-17EB-453C-A96F-A0B7FB3678E4}"
 EndProject
+Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "SkynetSetup", "..\SkynetSetup\SkynetSetup.isproj", "{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D} = {454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CD_ROM|Any CPU = CD_ROM|Any CPU
 		Debug|Any CPU = Debug|Any CPU
+		DVD-5|Any CPU = DVD-5|Any CPU
 		Release|Any CPU = Release|Any CPU
+		SingleImage|Any CPU = SingleImage|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
+		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
 		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
 		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
+		{454D8B1A-68B9-4DC0-9954-E4D5A78C5A4D}.SingleImage|Any CPU.Build.0 = Release|Any CPU
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.CD_ROM|Any CPU.ActiveCfg = CD_ROM
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.CD_ROM|Any CPU.Build.0 = CD_ROM
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.Debug|Any CPU.ActiveCfg = DVD-5
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.Debug|Any CPU.Build.0 = DVD-5
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.DVD-5|Any CPU.ActiveCfg = DVD-5
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.DVD-5|Any CPU.Build.0 = DVD-5
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.Release|Any CPU.ActiveCfg = SingleImage
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.Release|Any CPU.Build.0 = SingleImage
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.SingleImage|Any CPU.ActiveCfg = SingleImage
+		{29E01CF9-50AF-4791-A3AA-404FF9EFA2BC}.SingleImage|Any CPU.Build.0 = SingleImage
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

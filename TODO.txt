@@ -1,10 +1,17 @@
 ﻿TODO
 
 v 0.3.0.0
+	[ ] Installer
+	[ ] Scale slider
+	[ ] Mousewheel scaling	
+	[ ] Write a TCP simulator
+		Write you own TCPIP stack: http://events.ccc.de/congress/2005/fahrplan/attachments/630-muXTCP-22c3.pdf
+		Layout of the layers:  http://www.thegeekstuff.com/2011/11/tcp-ip-fundamentals/
+		Socket-level TCPIP: http://alumni.cs.ucr.edu/~ecegelal/TAw/socketTCP.pdf 
+		C# Implementation with code: http://stackoverflow.com/questions/869744/how-to-write-a-scalable-tcp-ip-based-server 
 
 v Later
-	[ ] Scale slider
-	[ ] Mousewheel scaling	[ ] Save state
+	[ ] Save state
 	[ ] Make sure the coverage circle is the correct size
 	[ ] Plugins: deployment, node code, reporting
 

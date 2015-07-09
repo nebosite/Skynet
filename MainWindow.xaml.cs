@@ -237,7 +237,8 @@ namespace SkyNet
         //-------------------------------------------------------------------------------------
         private void Planet3DDisplay_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-
+            if (e.Delta > 0) _mainModel.FieldOfView /= 1.1;
+            else _mainModel.FieldOfView *= 1.1;
         }
 
         //-------------------------------------------------------------------------------------
