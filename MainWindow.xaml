@@ -5,42 +5,54 @@
         Title="{Binding WindowTitle}" Height="795.5" Width="1337.985"
         Closing="Window_Closing" Icon="skyneticon.ico">
     <Grid>
-        <TabControl Margin="10,10,0,10" HorizontalAlignment="Left" Width="386">
-            <TabItem Header="View">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Time Dilation:  "/>
-                        <Slider Value="{Binding TimeDilation}" Minimum="1" Maximum="1000" Width="200" />
-                        <Label Content="{Binding TimeDilation}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Zoom:  "/>
-                        <Slider Value="{Binding FieldOfView}" Minimum="1" Maximum="10" Width="200" />
-                        <Label Content="{Binding FieldOfView}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Satellite Count:  "/>
-                        <Slider Value="{Binding SatelliteCount}" Minimum="1" Maximum="1000" Width="180" />
-                        <Label Content="{Binding SatelliteCount}" Width="35"/>
-                        <Button Content="Regenerate" Click="Regenerate_Click" />
-                    </StackPanel>                    
-                    <Border BorderThickness="2" BorderBrush="Blue">
-                        <StackPanel>
-                            <Label Content="Satellite Coverage Heat Map" FontWeight="Bold"/>
-                            <CheckBox Content="Enabled" IsChecked="{Binding HeatmapEnabled}" />
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="Prime Coverage:  "/>
-                                <Slider Value="{Binding PrimeCoverage}" Minimum="1" Maximum="100" Width="150" />
-                                <Label Content="{Binding PrimeCoverage}"/>
-                                <Label Content=" satellites"/>
-                            </StackPanel>                              
+        <StackPanel Margin="10,10,0,10" HorizontalAlignment="Left" Width="386">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Time Dilation:  "/>
+                <Slider Value="{Binding TimeDilation}" Minimum="1" Maximum="1000" Width="200" />
+                <Label Content="{Binding TimeDilation}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Zoom:  "/>
+                <Slider Value="{Binding FieldOfView}" Minimum="1" Maximum="10" Width="200" />
+                <Label Content="{Binding FieldOfView}"/>
+            </StackPanel>            
+            <TabControl >
+                <TabItem Header="Satellites">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Generation Type:  "/>
+                            <ComboBox ItemsSource="{Binding SatelliteGenerators}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedGenerator}" Width="120" />
                         </StackPanel>
-                    </Border>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Satellite Count:  "/>
+                            <Slider Value="{Binding SatelliteCount}" Minimum="1" Maximum="1000" Width="180" />
+                            <Label Content="{Binding SatelliteCount}" Width="35"/>
+                            <Button Content="Regenerate" Click="Regenerate_Click" />
+                        </StackPanel>                    
 
 
-                </StackPanel>
-            </TabItem>
-        </TabControl>
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="Reporting">
+                    <StackPanel>
+                        <Border BorderThickness="2" BorderBrush="Blue">
+                            <StackPanel>
+                                <Label Content="Satellite Coverage Heat Map" FontWeight="Bold"/>
+                                <CheckBox Content="Enabled" IsChecked="{Binding HeatmapEnabled}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Prime Coverage:  "/>
+                                    <Slider Value="{Binding PrimeCoverage}" Minimum="1" Maximum="100" Width="150" />
+                                    <Label Content="{Binding PrimeCoverage}"/>
+                                    <Label Content=" satellites"/>
+                                </StackPanel>                              
+                            </StackPanel>
+                        </Border>
+                        
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+            
+        </StackPanel>
         
         <Border Margin="401,34,10,10" Background="Black">
             <Viewport3D x:Name="Planet3DDisaply" 

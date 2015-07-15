@@ -14,7 +14,7 @@ namespace SkyNet
     /// Heatmap - Provides ability to render heatmap textures
     /// </summary>
     //-------------------------------------------------------------------------------------
-    class Heatmap
+    public class Heatmap
     {
         WriteableBitmap _heatMap;
         public ImageSource Bitmap { get { return _heatMap; } }

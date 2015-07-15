@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -20,6 +22,11 @@ namespace SkyNet
         public static Random Rand = new Random();
     }
 
+    public static class SimulationConstants
+    {
+        public const double Altitude_Meters = 1200000;
+        public const double Inclination = 57 / 180.0 * Math.PI;
+    }
 
 
     //-------------------------------------------------------------------------------------
@@ -27,14 +34,16 @@ namespace SkyNet
     /// 
     /// </summary>
     //-------------------------------------------------------------------------------------
-    public class MainModel : BaseModel
+    public class MainModel : BaseModel, IDisposable
     {
-
-        double Altitude_Meters = 1200000;
-        double inclination = 57 / 180.0 * Math.PI;
         double beamDivergence = 50 / 180.0 * Math.PI;
-        List<SatelliteModel> _mainOrbit;
         public double GlobalTimeSeconds { get; set; }
+        int _heatmapWidth = 400;
+        int _heatmapHeight = 200;
+        bool _running = true;
+        Thread _heatMapThread;
+
+        public Heatmap _heatMap {get; set;}
 
         /// <summary>
         /// Obervable property: VisualObjects
@@ -166,8 +175,24 @@ namespace SkyNet
                 RaisePropertyChanged("SatelliteCount");
             }
         }
-        
-        
+
+        /// <summary>
+        /// Obervable property: SelectedGenerator
+        /// </summary>
+        private SatelliteGenerationBase _selectedGenerator;
+        public SatelliteGenerationBase SelectedGenerator
+        {
+            get { return _selectedGenerator; }
+            set
+            {
+                _selectedGenerator = value;
+                RaisePropertyChanged("SelectedGenerator");
+            }
+        }
+
+
+        public SatelliteGenerationBase[] SatelliteGenerators { get; set; }
+
         //-------------------------------------------------------------------------------------
         /// <summary>
         /// Constructor
@@ -175,9 +200,23 @@ namespace SkyNet
         //-------------------------------------------------------------------------------------
         public MainModel()
         {
+            _heatMap = new Heatmap(_heatmapWidth, _heatmapHeight, 0);
+            _heatMap.Render();
+            _heatMapThread = new Thread(HeatMapWorker);
+            _heatMapThread.Start();
+
+
+            SatelliteGenerators = new SatelliteGenerationBase[]
+            {
+                new SatelliteGeneratorEvenlySpaced(),
+                new SatelliteGeneratorRandom()
+            };
+
+            _selectedGenerator = SatelliteGenerators[0];
+
             Satellites = new ObservableCollection<SatelliteModel>();
             HeatmapEnabled = false;
-            PrimeCoverage = 20;
+            PrimeCoverage = 10;
 
             Scale = .00001;
             CenterX = 350;
@@ -185,11 +224,8 @@ namespace SkyNet
             TimeDilation = 10;
             FieldOfView = 10;
 
-            var earthBrush = new ImageBrush(new BitmapImage(new Uri(@"earth.png", UriKind.Relative)));
 
-            _mainOrbit = CalculateOrbitSolutions();
-
-            SatelliteCount = 700;
+            SatelliteCount = 300;
             RegenerateSatellites();
         }
 
@@ -201,88 +237,12 @@ namespace SkyNet
         public void RegenerateSatellites()
         {
             Satellites.Clear();
-            int skip = _mainOrbit.Count / SatelliteCount;
-            for (int i = 0; i < SatelliteCount; i++)
+            foreach(var satellite in _selectedGenerator.Generate(SatelliteCount))
             {
-                var newSatellite = _mainOrbit[i * skip];
-                newSatellite.Size = 5;
-                Satellites.Add(newSatellite);
+                Satellites.Add(satellite);
             }
         }
 
-        //-------------------------------------------------------------------------------------
-        /// <summary>
-        /// CalculateOrbitSolutions Precalculate satellite positions for a particular orbit
-        /// </summary>
-        //-------------------------------------------------------------------------------------
-        private List<SatelliteModel> CalculateOrbitSolutions()
-        {
-            // Calculate the long orbit and divide it up into points. 
-            double theta = 0;
-            List<SatelliteModel> mainOrbit = new List<SatelliteModel>();
-            var testSatellite = new SatelliteModel();
-            var satelliteRadius = PhysicalConstants.EARTHRADIUS_METERS + Altitude_Meters;
-            SetSatelliteData(theta, testSatellite, satelliteRadius);
-
-            var stepDistanceMeters = 20000;
-            mainOrbit.Add(testSatellite.Clone());
-            var lastLocation = testSatellite.Location;
-            var orbitCheckLocation = testSatellite.Location;
-            int count = 0;
-            var done = false;
-            int thisOrbitCount = 0;
-            while (!done)
-            {
-                while ((testSatellite.Location - lastLocation).Length < stepDistanceMeters)
-                {
-                    var length = (testSatellite.Location - lastLocation).Length;
-                    count++;
-                    testSatellite.Move(.1);
-
-                    // Check for orbit completion
-                    if (thisOrbitCount > 2)
-                    {
-                        if ((testSatellite.Location - orbitCheckLocation).Length < stepDistanceMeters)
-                        {
-                            theta += Math.PI * .05;
-                            if (theta > Math.PI * 2)
-                            {
-                                done = true;
-                            }
-                            SetSatelliteData(theta, testSatellite, satelliteRadius);
-                            orbitCheckLocation = lastLocation = testSatellite.Location;
-                            thisOrbitCount = 0;
-                            break;
-                        }
-                    }
-                }
-                mainOrbit.Add(testSatellite.Clone());
-                thisOrbitCount++;
-                lastLocation = testSatellite.Location;
-
-            }
-            return mainOrbit;
-        }
-
-        //-------------------------------------------------------------------------------------
-        /// <summary>
-        /// SetSatelliteData
-        /// </summary>
-        //-------------------------------------------------------------------------------------
-        private void SetSatelliteData(double theta, SatelliteModel testSatellite, double satelliteRadius)
-        {
-            testSatellite.Location = new Vector3(
-                (satelliteRadius) * Math.Sin(theta),
-                0,
-                (satelliteRadius) * Math.Cos(theta)
-                );
-            var stableVelocity = Math.Sqrt(PhysicalConstants.GM_EARTH / testSatellite.Location.Length);
-            double prexv = stableVelocity * Math.Cos(inclination);
-            double yv = stableVelocity * Math.Sin(inclination);
-            double xv = prexv * Math.Cos(theta);
-            double zv = -prexv * Math.Sin(theta);
-            testSatellite.Velocity = new Vector3(xv, yv, zv);
-        }
 
         //-------------------------------------------------------------------------------------
         /// <summary>
@@ -302,6 +262,75 @@ namespace SkyNet
 
             }
         }
+
+        int _heatmapRenderIndex = 0;
+        double newHeatMapBudget = 0;
+        void HeatMapWorker(object state)
+        {
+            while(_running)
+            {
+                if (newHeatMapBudget <= 0 || !HeatmapEnabled || Satellites.Count == 0)
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                var coveragePerSatellite = .85 / PrimeCoverage ;
+                var coverageRadius = (int)(20 * _heatmapWidth / 400.0);
+                var millisecondBudget = newHeatMapBudget;
+                newHeatMapBudget = 0;
+
+                Action heatmapRender = ()=>
+                    {
+                        _heatMap.Render();
+                        _heatMap.Clear();
+                    };
+
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                while(stopwatch.Elapsed.TotalMilliseconds < millisecondBudget && _running)
+                {
+                    if(_heatmapRenderIndex >= Satellites.Count)
+                    {
+                        _heatmapRenderIndex = 0;
+                        Dispatcher.Invoke(heatmapRender, null);
+                    }
+                    var location = Satellites[_heatmapRenderIndex++].Location;
+
+                    // Back out the correct mapping of this satellite onto the heatmap
+                    var h = Math.Sqrt(location.X * location.X + location.Z * location.Z);
+                    var sinTheta = -location.Z / h;
+                    var theta = -Math.Asin(sinTheta);
+                    if (h == 0) theta = Math.PI / 2;
+                    if (location.X > 0) theta = Math.PI / 2 + (Math.PI / 2 - theta);
+                    var h2 = location.Length;
+                    var sinPhi = location.Y / h2;
+                    var phi = Math.Asin(sinPhi);
+                    if (h2 == 0) phi = Math.PI / 2;
+
+                    var heatx = (theta - Math.PI) / (Math.PI * 2) * _heatmapWidth;
+                    var heaty = (Math.PI / 2 - phi) / Math.PI * _heatmapHeight;
+
+                    _heatMap.DrawSpot(heatx, heaty, coverageRadius, coveragePerSatellite);
+                }
+
+               
+            }
+        }
+
+        internal void RenderToHeatMap(double millisecondBudget)
+        {
+            newHeatMapBudget = millisecondBudget;
+        }
+
+        public void Dispose()
+        {
+            _running = false;
+            _heatMapThread.Join();
+
+        }
+
+        public System.Windows.Threading.Dispatcher Dispatcher { get; set; }
     }
 
 }

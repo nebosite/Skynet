@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -59,6 +60,9 @@
     </ApplicationDefinition>
     <Compile Include="Heatmap.cs" />
     <Compile Include="ModelHelper.cs" />
+    <Compile Include="SatelliteGeneration\SatelliteGenerationBase.cs" />
+    <Compile Include="SatelliteGeneration\SatelliteGeneratorRandom.cs" />
+    <Compile Include="SatelliteGeneration\SatelliteGeneratorEvenlySpaced.cs" />
     <Compile Include="StelliteModel.cs" />
     <Compile Include="Vector3.cs" />
     <Page Include="MainWindow.xaml">
@@ -112,6 +116,9 @@
     </Content>
     <Resource Include="skyneticon.ico" />
     <Resource Include="TODO.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

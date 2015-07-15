@@ -28,9 +28,6 @@ namespace SkyNet
         MainModel _mainModel = new MainModel();
         Thread moverThread;
         bool _running = true;
-        Heatmap _heatMap;
-        int _heatmapWidth = 400;
-        int _heatmapHeight = 200;
         const double SECONDSPERDAY = 86164;
         Model3DGroup mainGroup;
         Transform3DGroup _worldTransform = new Transform3DGroup();
@@ -49,6 +46,7 @@ namespace SkyNet
             InitializeComponent();
             this.DataContext = _mainModel;
             SetupWorld();
+            _mainModel.Dispatcher = this.Dispatcher;
         }
 
         //-------------------------------------------------------------------------------------
@@ -62,8 +60,7 @@ namespace SkyNet
             moverThread = new Thread(Mover);
             moverThread.Start();
 
-            _heatMap = new Heatmap(_heatmapWidth, _heatmapHeight, 0);
-            _heatMap.Render();
+
 
             mainGroup = new Model3DGroup();
 
@@ -76,7 +73,7 @@ namespace SkyNet
             mainGroup.Children.Add(earthModel);
             earthModel.Transform = _earthTransform;
 
-            var heatMapBrush = new ImageBrush(_heatMap.Bitmap) { ViewportUnits = BrushMappingMode.Absolute };
+            var heatMapBrush = new ImageBrush(_mainModel._heatMap.Bitmap) { ViewportUnits = BrushMappingMode.Absolute };
             coverageModel.Material = new DiffuseMaterial(heatMapBrush);
             coverageModel.Transform = _coverageTransform;
             mainGroup.Children.Add(coverageModel);
@@ -114,8 +111,6 @@ namespace SkyNet
         //-------------------------------------------------------------------------------------
         private void DrawFrame(object sender, EventArgs e)
         {
-            _heatMap.Clear();
-
             _earthTransform.Children.Clear();
             double r = PhysicalConstants.EARTHRADIUS_METERS / 1000;
             _earthTransform.Children.Add(new ScaleTransform3D(r, r, r));
@@ -130,32 +125,12 @@ namespace SkyNet
             rotation += .003;
             RenderingEventArgs renderArgs = (RenderingEventArgs)e;
 
-            var coveragePerSatellite = .85 / _mainModel.PrimeCoverage;
+            _mainModel.RenderToHeatMap(12);
+
             foreach(var item in _mainModel.Satellites)
             {
-                var location = item.Location;
-
-                if (_mainModel.HeatmapEnabled)
-                {
-                    // Back out the correct mapping of this satellite onto the heatmap
-                    var h = Math.Sqrt(location.X * location.X + location.Z * location.Z);
-                    var sinTheta = -location.Z / h;
-                    var theta = -Math.Asin(sinTheta);
-                    if (h == 0) theta = Math.PI / 2;
-                    if (location.X > 0) theta = Math.PI / 2 + (Math.PI / 2 - theta);
-                    var h2 = location.Length;
-                    var sinPhi = location.Y / h2;
-                    var phi = Math.Asin(sinPhi);
-                    if (h2 == 0) phi = Math.PI / 2;
-
-                    var heatx = (theta - Math.PI) / (Math.PI * 2) * _heatmapWidth;
-                    var heaty = (Math.PI / 2 - phi) / Math.PI * _heatmapHeight;
-
-                    _heatMap.DrawSpot(heatx, heaty, 20, coveragePerSatellite);
-                }
-
                 // Make sure the satellite has a 3D model and render it
-                if(item.Model == null)
+                if (item.Model == null)
                 {
                     item.Model = ModelHelper.CreateSatelliteModel(mainGroup);
                     item.Model.Material = new DiffuseMaterial(Brushes.Red);
@@ -163,12 +138,10 @@ namespace SkyNet
                 }
                 var itemTransform = new Transform3DGroup();
                 itemTransform.Children.Add(new ScaleTransform3D(1000, 1000, 1000));
-                itemTransform.Children.Add(new TranslateTransform3D(item.Location.X/1000, item.Location.Y/1000, item.Location.Z/1000));
-                item.Model.Transform = itemTransform;                
+                itemTransform.Children.Add(new TranslateTransform3D(item.Location.X / 1000, item.Location.Y / 1000, item.Location.Z / 1000));
+                item.Model.Transform = itemTransform;  
+              
             }
-
-            _heatMap.Render();
-
         }
 
         //-------------------------------------------------------------------------------------
@@ -178,6 +151,7 @@ namespace SkyNet
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             _running = false;
+            _mainModel.Dispose();
         }
 
         //-------------------------------------------------------------------------------------
