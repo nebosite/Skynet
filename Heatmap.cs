@@ -153,6 +153,18 @@ namespace SkyNet
 
         //-------------------------------------------------------------------------------------
         /// <summary>
+        /// Get the heatmap value for a particular point
+        /// </summary>
+        //-------------------------------------------------------------------------------------
+        public double GetValue(double x, double y)
+        {
+            var xx = (int)(x % Width);
+            var yy = (int)(y % Height);
+            return _heatMapValues[xx + yy * Width];
+        }
+
+        //-------------------------------------------------------------------------------------
+        /// <summary>
         /// DrawSpot - Draw a circular spot on the heat map
         /// </summary>
         //-------------------------------------------------------------------------------------

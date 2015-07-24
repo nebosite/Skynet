@@ -2,7 +2,10 @@
 
 v 0.4.0.0
 	[x] Random vs regular spacing module
-	[ ] Report on NY Coverage
+	[ ] Report on NY Coverage  
+		  40.728053° N  ,   -73.996552° W
+		  .45253, -.4111
+		  
 	[ ] Simple Routing
 	[ ] Visualize routing
 	[ ] report routing info

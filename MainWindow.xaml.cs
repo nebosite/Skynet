@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -8,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.DataVisualization.Charting;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -23,18 +25,16 @@ namespace SkyNet
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IChartPlotter
     {
-        MainModel _mainModel = new MainModel();
+        MainModel _mainModel;
         Thread moverThread;
         bool _running = true;
-        const double SECONDSPERDAY = 86164;
         Model3DGroup mainGroup;
         Transform3DGroup _worldTransform = new Transform3DGroup();
         Transform3DGroup _earthTransform = new Transform3DGroup();
         Transform3DGroup _coverageTransform = new Transform3DGroup();
         double _globalTimeSeconds = 0;
-        double rotation;
 
         //-------------------------------------------------------------------------------------
         /// <summary>
@@ -43,6 +43,7 @@ namespace SkyNet
         //-------------------------------------------------------------------------------------
         public MainWindow()
         {
+            _mainModel = new MainModel(this);
             InitializeComponent();
             this.DataContext = _mainModel;
             SetupWorld();
@@ -114,7 +115,7 @@ namespace SkyNet
             _earthTransform.Children.Clear();
             double r = PhysicalConstants.EARTHRADIUS_METERS / 1000;
             _earthTransform.Children.Add(new ScaleTransform3D(r, r, r));
-            _earthTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), _mainModel.GlobalTimeSeconds / SECONDSPERDAY * 360)));
+            _earthTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), _mainModel.EarthRotationDegrees)));
 
             _coverageTransform.Children.Clear();
             _coverageTransform.Children.Add(new ScaleTransform3D(r, r, r));
@@ -122,7 +123,6 @@ namespace SkyNet
             _worldTransform.Children.Clear();
             _worldTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), _rotationZ)));
             _worldTransform.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), _rotationX)));
-            rotation += .003;
             RenderingEventArgs renderArgs = (RenderingEventArgs)e;
 
             _mainModel.RenderToHeatMap(12);
@@ -225,6 +225,9 @@ namespace SkyNet
 
             _running = false;
             Thread.Sleep(100);
+
+            SetupNewChartLine();
+
             _mainModel.RegenerateSatellites();
             SetupWorld();
 
@@ -233,6 +236,53 @@ namespace SkyNet
             moverThread = new Thread(Mover);
             moverThread.Start();
 
+        }
+
+        int series = 0;
+        Brush[] _brushes = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Purple, Brushes.Orange, Brushes.Black };
+        public ObservableCollection<KeyValuePair<double, double>> CurrentLinePoints { get; set; }
+
+        //-------------------------------------------------------------------------------------
+        /// <summary>
+        /// </summary>
+        //-------------------------------------------------------------------------------------
+        private void SetupNewChartLine()
+        {
+           
+            var pointStyle = new Style(typeof(ScatterDataPoint));
+            pointStyle.Setters.Add(new Setter(ScatterDataPoint.ForegroundProperty, _brushes[series % _brushes.Length]));
+            pointStyle.Setters.Add(new Setter(ScatterDataPoint.BackgroundProperty, _brushes[series % _brushes.Length]));
+            pointStyle.Setters.Add(new Setter(ScatterDataPoint.BorderBrushProperty, Brushes.Transparent));
+            pointStyle.Setters.Add(new Setter(ScatterDataPoint.BorderThicknessProperty, new Thickness(0)));
+            pointStyle.Setters.Add(new Setter(ScatterDataPoint.HeightProperty, 3.0));
+            pointStyle.Setters.Add(new Setter(ScatterDataPoint.WidthProperty, 3.0));
+
+            var newLine = new ScatterSeries();
+            newLine.Title = _mainModel.CurrentSatelliteConfigLabel;
+            newLine.DependentValuePath = "Value";
+            newLine.IndependentValuePath = "Key";
+            newLine.DataPointStyle = pointStyle;
+
+            CurrentLinePoints = new ObservableCollection<KeyValuePair<double, double>>();
+            newLine.ItemsSource = CurrentLinePoints;
+            MyChart.Series.Add(newLine);
+            series++;
+        }
+
+        //-------------------------------------------------------------------------------------
+        /// <summary>
+        /// </summary>
+        //-------------------------------------------------------------------------------------
+        public void AddPoint(double hours, double coverage)
+        {
+            if (CurrentLinePoints == null) return;
+
+            Action drawPointAction = () =>
+            {
+                CurrentLinePoints.Add(new KeyValuePair<double, double>(hours, coverage));
+            };
+
+            Dispatcher.Invoke(drawPointAction);
         }
     }
 }

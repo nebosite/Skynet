@@ -20,6 +20,7 @@ namespace SkyNet
         public const double EARTHMASS_KG = 5.972e24;
         public const double GM_EARTH = G_MKGS * EARTHMASS_KG;
         public static Random Rand = new Random();
+        public const double SECONDSPERDAY = 86164;
     }
 
     public static class SimulationConstants
@@ -38,10 +39,13 @@ namespace SkyNet
     {
         double beamDivergence = 50 / 180.0 * Math.PI;
         public double GlobalTimeSeconds { get; set; }
+        public double StartTimeSeconds { get; set; }
         int _heatmapWidth = 400;
         int _heatmapHeight = 200;
         bool _running = true;
         Thread _heatMapThread;
+        IChartPlotter _chartPlotter;
+        
 
         public Heatmap _heatMap {get; set;}
 
@@ -57,7 +61,6 @@ namespace SkyNet
         {
             get { return "SkyNet v" + Assembly.GetExecutingAssembly().GetName().Version; }
         }
-
 
         /// <summary>
         /// Obervable property: FieldOfView
@@ -191,6 +194,78 @@ namespace SkyNet
         }
 
 
+        /// <summary>
+        /// Obervable property: MeasurementLatitude
+        /// </summary>
+        private double _measurementLatitude;
+        public double MeasurementLatitude
+        {
+            get { return _measurementLatitude; }
+            set
+            {
+                _measurementLatitude = value;
+                RaisePropertyChanged("MeasurementLatitude");
+            }
+        }
+
+
+        /// <summary>
+        /// Obervable property: EarthRotationDegrees
+        /// </summary>
+        private double _earthRotationDegrees;
+        public double EarthRotationDegrees
+        {
+            get
+            { 
+                return GlobalTimeSeconds / PhysicalConstants.SECONDSPERDAY * 360; 
+            }
+        }
+        
+
+        /// <summary>
+        /// Obervable property: MeasurementLongitude
+        /// </summary>
+        private double _measurementLongitude;
+        public double MeasurementLongitude
+        {
+            get { return _measurementLongitude; }
+            set
+            {
+                _measurementLongitude = value;
+                RaisePropertyChanged("MeasurementLongitude");
+            }
+        }
+
+
+        /// <summary>
+        /// Obervable property: SamplingIntervalSeconds
+        /// </summary>
+        private int _samplingIntervalSeconds;
+        public int SamplingIntervalSeconds
+        {
+            get { return _samplingIntervalSeconds; }
+            set
+            {
+                _samplingIntervalSeconds = value;
+                RaisePropertyChanged("SamplingIntervalSeconds");
+            }
+        }
+
+
+        /// <summary>
+        /// Obervable property: Samples
+        /// </summary>
+        private List<double> _samples;
+        public List<double> Samples
+        {
+            get { return _samples; }
+            set
+            {
+                _samples = value;
+                RaisePropertyChanged("Samples");
+            }
+        }
+        
         public SatelliteGenerationBase[] SatelliteGenerators { get; set; }
 
         //-------------------------------------------------------------------------------------
@@ -198,13 +273,19 @@ namespace SkyNet
         /// Constructor
         /// </summary>
         //-------------------------------------------------------------------------------------
-        public MainModel()
+        public MainModel(IChartPlotter plotter)
         {
+            _chartPlotter = plotter;
+
             _heatMap = new Heatmap(_heatmapWidth, _heatmapHeight, 0);
             _heatMap.Render();
             _heatMapThread = new Thread(HeatMapWorker);
             _heatMapThread.Start();
 
+            // New York City
+            MeasurementLatitude = 40.728053;
+            MeasurementLongitude = -73.996552;
+            SamplingIntervalSeconds = 300;
 
             SatelliteGenerators = new SatelliteGenerationBase[]
             {
@@ -224,10 +305,11 @@ namespace SkyNet
             TimeDilation = 10;
             FieldOfView = 10;
 
-
             SatelliteCount = 300;
             RegenerateSatellites();
         }
+
+        double _lastSample = 0;
 
         //-------------------------------------------------------------------------------------
         /// <summary>
@@ -236,13 +318,15 @@ namespace SkyNet
         //-------------------------------------------------------------------------------------
         public void RegenerateSatellites()
         {
+            StartTimeSeconds = GlobalTimeSeconds;
+            _samples = new List<double>();
+            _lastSample = GlobalTimeSeconds;
             Satellites.Clear();
             foreach(var satellite in _selectedGenerator.Generate(SatelliteCount))
             {
                 Satellites.Add(satellite);
             }
         }
-
 
         //-------------------------------------------------------------------------------------
         /// <summary>
@@ -282,6 +366,16 @@ namespace SkyNet
 
                 Action heatmapRender = ()=>
                     {
+                        if (GlobalTimeSeconds - _lastSample > SamplingIntervalSeconds)
+                        {
+                            var shift = EarthRotationDegrees / 360 * _heatMap.Width;
+                            double x = (_heatMap.Width / 2 + _heatMap.Width / 2 * MeasurementLongitude / 180 + shift) % _heatMap.Width;
+                            double y = _heatMap.Height / 2 - _heatMap.Height / 2 * MeasurementLatitude / 90;
+                            //_heatMap.DrawSpot(x, y, 3, 1);
+                            var measurement = _heatMap.GetValue(x, y) * PrimeCoverage;
+                            var lastSampleHours = (GlobalTimeSeconds - StartTimeSeconds)/3600.0;
+                            _chartPlotter.AddPoint(lastSampleHours, measurement);
+                        }
                         _heatMap.Render();
                         _heatMap.Clear();
                     };
@@ -331,6 +425,8 @@ namespace SkyNet
         }
 
         public System.Windows.Threading.Dispatcher Dispatcher { get; set; }
+
+        public object CurrentSatelliteConfigLabel { get { return _selectedGenerator.ToString(); } }
     }
 
 }

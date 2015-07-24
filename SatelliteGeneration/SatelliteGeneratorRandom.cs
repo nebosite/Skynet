@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace SkyNet
 {
-    public class SatelliteGeneratorEvenlySpaced : SatelliteGenerationBase
+    public class SatelliteGeneratorRandom : SatelliteGenerationBase
     {
-
-        public SatelliteGeneratorEvenlySpaced():base("Evenly Spaced")
+        public SatelliteGeneratorRandom() : base("Random")
         {
+
         }
 
         string _label;
@@ -22,12 +22,12 @@ namespace SkyNet
         //-------------------------------------------------------------------------------------
         public override SatelliteModel[] Generate(int count)
         {
-            _label = "Evenly Spaced " + count;
+            _label = "Random " + count;
+            var rand = new Random();
             var satellites = new List<SatelliteModel>();
-            int skip = _mainOrbit.Count / count;
             for (int i = 0; i < count; i++)
             {
-                var newSatellite = _mainOrbit[i * skip];
+                var newSatellite = _mainOrbit[rand.Next(_mainOrbit.Count)];
                 newSatellite.Size = 5;
                 satellites.Add(newSatellite.Clone());
             }
